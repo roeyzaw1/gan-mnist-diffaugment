@@ -3,7 +3,8 @@
 Workstream owner: Roey. Status: **training done for 5/6 conditions; local metrics pending.**
 Portable evidence: this report, [export-check CSV](diffaugment-export-check.csv),
 [workstream ledger](diffaugment-ledger.jsonl) (added when all runs finish) and
-[sample figure](figures/diffaugment-samples.png). Full runs stay on Juliet under
+[sample figure](figures/diffaugment-samples.png),
+[what-D-sees figure](figures/diffaugment-what-d-sees.png). Full runs stay on Juliet under
 `~/a2-diffaug/repo/runs/` (ignored by Git, per the [artifact policy](README.md)).
 
 ## Idea
@@ -20,6 +21,12 @@ discriminator, losses and optimiser are unchanged.
   (`diffaugment.py`): translation by up to 4 px, cutout of a 14×14 square, and
   brightness/contrast; padding and cutout use the background value −1, not 0.
   No flips or rotations (they change digit identity).
+What D sees under each transform, on real training digits
+([figure](figures/diffaugment-what-d-sees.png), `scripts/diffaug_explainer_figure.py`):
+translation and brightness/contrast keep the digit recognisable; cutout (14×14) often
+removes the strokes that define it (an 8 can become a "J" or "?"), and combining all
+three is harsher still.
+
 - **Instance noise** (Sønderby et al. 2017; Arjovsky & Bottou 2017): Gaussian noise
   (initial std 0.1, annealed linearly to 0) added to all D inputs.
 - **Adaptive augmentation** (ADA idea, Karras et al. 2020): each transform is applied
