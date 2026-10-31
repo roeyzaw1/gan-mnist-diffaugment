@@ -1,0 +1,943 @@
+{
+  "artifact_policy": "Full outputs, condition metadata, source snapshots and grids remain local under runs/. Portable results and provenance are consolidated here; checkpoints/evaluator are shared once.",
+  "compacted_at_utc": "2026-10-31T13:13:39.933876+00:00",
+  "decisions": {
+    "latent-scaling-extension-selection.json": {
+      "original_sha256": "d724ae3ab332ac04f5e20d58b99da07b61d51a9f8a278b3ec77109e566abe845",
+      "record": {
+        "candidates": [
+          1.75,
+          2.0
+        ],
+        "confirmation_seed": 3,
+        "controls": [
+          1.0,
+          1.3
+        ],
+        "criterion": "Largest mean precision is sigma=1.75; smallest mean FD-MNIST is sigma=2.0. Confirm both, no selection on seed 3.",
+        "discovery_results_sha256": "54b13d38645aabde45f8c76044888917329eb29b05d3ab20743c88e86e9d4185",
+        "discovery_seeds": [
+          1,
+          2
+        ],
+        "extractor_sha256": "bdaaa5980696a90be7fba00b4ed5a911d0cd3e9dfb07dfa9f88cdbc83856c385",
+        "protocol": "local-MNIST64-k3-v1",
+        "selected_at_utc": "2026-10-31T12:48:15.142923+00:00"
+      }
+    },
+    "latent-scaling-upper-decision.json": {
+      "original_sha256": "282def9f4fd74e7139dfa24a819d47d7658e4b1429ca0d9abfa1f44f399ba1ed",
+      "record": {
+        "action": "Close this bounded scale expansion; retain previous seed-3 confirmation; do not use seed 4.",
+        "additional_confirmation_required": false,
+        "best_tested_sigma_for_FD_MNIST": 2.0,
+        "best_tested_sigma_for_precision": 1.75,
+        "new_candidate_selected": false,
+        "plan_sha256": "ed2f23cdb7b879d2caf6147a028e17ec2b44ef48c91e0dd6c56e1eb14e0a8b5e",
+        "reason": "No new scale improves FD-MNIST or precision over previously confirmed candidates. Recall changes concern only 1-3 real reference images per condition and are not used to select a new candidate.",
+        "recorded_at_utc": "2026-10-31T13:05:28.295494+00:00",
+        "results_sha256": "097c13d646c11f33b970a57f9d3ca598e9402d8ca19f1a3454a7fc6843ffda36"
+      }
+    },
+    "latent-scaling-upper-plan.json": {
+      "original_sha256": "ed2f23cdb7b879d2caf6147a028e17ec2b44ef48c91e0dd6c56e1eb14e0a8b5e",
+      "record": {
+        "confirmation_seed_if_needed": 4,
+        "controls": [
+          1.0,
+          1.75,
+          2.0
+        ],
+        "evaluator": "experiments/local-metrics-mnist64-k3",
+        "generation_seeds": [
+          1,
+          2
+        ],
+        "generator": "checkpoints/baseline-seed0-e10/G.pth",
+        "num_images_per_condition": 10000,
+        "official": false,
+        "previous_confirmation_seed": 3,
+        "purpose": "Bracket the FD-MNIST minimum beyond the previously best tested sigma=2.0; preserve precision comparator sigma=1.75.",
+        "recorded_at_utc": "2026-10-31T13:02:17.225112+00:00",
+        "sigmas": [
+          1.0,
+          1.75,
+          2.0,
+          2.25,
+          2.5,
+          3.0
+        ],
+        "stopping_rule": "Stop after this declared grid. Keep previously confirmed sigma=1.75 (precision) and 2.0 (FD) unless a new value improves a metric. Confirm any newly selected candidate with generation seed 4, using fixed candidates and controls, without further selection on seed 4."
+      }
+    }
+  },
+  "evaluator": "experiments/local-metrics-mnist64-k3",
+  "extractor_sha256": "bdaaa5980696a90be7fba00b4ed5a911d0cd3e9dfb07dfa9f88cdbc83856c385",
+  "figure": {
+    "indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "path": "experiments/figures/latent-scaling.png",
+    "seed": 1,
+    "selection": "first 16 candidates in index order, same noise across scales"
+  },
+  "generator": "checkpoints/baseline-seed0-e10/G.pth",
+  "generator_sha256": "5b7db542088d964e85592ffe2faf9acb351e5ee9639ccee4f047791a32b0628e",
+  "official": false,
+  "repeated_controls_are_not_independent_replications": true,
+  "result_key": [
+    "seed",
+    "sigma"
+  ],
+  "results": "experiments/latent-scaling-all-local.csv",
+  "schema_version": 1,
+  "split_sha256": "794e59d2e203c19c0f3b1dd96864d21efd8d46332de1a981c3bffc4acde6db98",
+  "stages": [
+    {
+      "commit": "10d864dcdcb251fd05d4bb0d1727381b5f4b7509",
+      "conditions": [
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.386212562007131,
+          "run_id": "latent-scaling-baseline-e10-seed1-sigma0.5",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 0.5,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 4.446770643990021,
+          "run_id": "latent-scaling-baseline-e10-seed1-sigma0.7",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 0.7,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 4.566418386006262,
+          "run_id": "latent-scaling-baseline-e10-seed1-sigma0.85",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 0.85,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 4.201235676999204,
+          "run_id": "latent-scaling-baseline-e10-seed1-sigma1",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 1.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.8700338609924074,
+          "run_id": "latent-scaling-baseline-e10-seed1-sigma1.15",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 1.15,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.775174843991408,
+          "run_id": "latent-scaling-baseline-e10-seed1-sigma1.3",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 1.3,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.61737886199262,
+          "run_id": "latent-scaling-baseline-e10-seed2-sigma0.5",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 0.5,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.644361532991752,
+          "run_id": "latent-scaling-baseline-e10-seed2-sigma0.7",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 0.7,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.838252713001566,
+          "run_id": "latent-scaling-baseline-e10-seed2-sigma0.85",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 0.85,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.692324797011679,
+          "run_id": "latent-scaling-baseline-e10-seed2-sigma1",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 1.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.761190318997251,
+          "run_id": "latent-scaling-baseline-e10-seed2-sigma1.15",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 1.15,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.700326563004637,
+          "run_id": "latent-scaling-baseline-e10-seed2-sigma1.3",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 1.3,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        }
+      ],
+      "config": {
+        "batch_size": 256,
+        "deterministic_algorithms": true,
+        "export": "starter PNG RGB 28x28; negative raw values clipped, no rescaling",
+        "num_samples": 10000,
+        "prior": "z = sigma * eps; eps ~ N(0,I), dimension 100",
+        "rng": "private CPU RNG seeded before generator initialization; full-batch draws",
+        "seeds": [
+          1,
+          2
+        ],
+        "sigmas": [
+          0.5,
+          0.7,
+          0.85,
+          1.0,
+          1.15,
+          1.3
+        ],
+        "training": "none; same frozen G for every condition"
+      },
+      "evaluation_source_sha256": {
+        "local_metrics.py": "fd2ccb62477c4578d09e34651021aa1666803ee6aeec6137262ae605cf24f353",
+        "scripts/evaluate_local.py": "b0f9bc74f583e21925d53c18d32b57b98adbe65446e1e531a579d68d0b6d8150"
+      },
+      "evaluation_summary_sha256": "211db6d0fe982719cccc8f8325c2e6547a77e243728c2dfa40568ae3a70b11fb",
+      "evaluation_total_seconds": 113.43406062098802,
+      "generation_summary_sha256": "75ec83fdea2f32342a0f2f46de989f13995053c2ed1359e2b11403dd63996329",
+      "generation_total_seconds": 58.59617752401391,
+      "git_status_at_launch": "M generate.py\n M scripts/baseline.py\n?? sampling.py\n?? scripts/latent_scaling.py\n?? tests/",
+      "hardware": {
+        "cpu": "AMD Ryzen 3 PRO 5450U with Radeon Graphics",
+        "device": "cpu",
+        "gpu": null,
+        "logical_cpus": 8,
+        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+        "torch_threads": 2
+      },
+      "local_evaluation_dir": "runs/local-metrics-mnist64-k3",
+      "local_generation_dir": "runs/latent-scaling-baseline-e10",
+      "name": "latent-scaling-baseline-e10",
+      "packages": {
+        "numpy": "2.5.4",
+        "pillow": "13.0.0",
+        "scikit-learn": "1.9.1",
+        "scipy": "1.18.1",
+        "torch": "2.15.0+cpu",
+        "torchvision": "0.29.2+cpu",
+        "tqdm": "4.70.1"
+      },
+      "reference_features_sha256": null,
+      "role": "discovery",
+      "source_sha256": {
+        "generate.py": "4cfacb4518018637ab665e98cf190d85b06ebd3b5cc6d495c53257e3c4f33f09",
+        "model.py": "895b18cd9135a400cf92d0ac987d28a4139acacb562bf95bbd6d9f32285af28f",
+        "requirements.txt": "039fa8892abe7df11e6a3c4765430b1d231ef5a4b3a24761249e5cb010f1730e",
+        "sampling.py": "f2d02fefa8bfd1b6ea3507dd0346780c6c99b57bb99f3cacf5cb0d22eeb4183e",
+        "scripts/latent_scaling.py": "4bff7bc2d1d6d36072afa9d43a38c4b2501c5fde1fca7b63011693bc60c503c7"
+      },
+      "timing_protocol": "Per-condition load + weight snapshot + noise hashing/raw diagnostics + inference + all PNG writes; excludes Python imports, source recording, post-export validation and grids. Same protocol for sigma=1. Not directly comparable to subprocess-based baseline timings."
+    },
+    {
+      "commit": "10d864dcdcb251fd05d4bb0d1727381b5f4b7509",
+      "conditions": [
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.543341155978851,
+          "run_id": "latent-scaling-extended-e10-seed1-sigma1",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 1.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.7600257659796625,
+          "run_id": "latent-scaling-extended-e10-seed1-sigma1.3",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 1.3,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 4.072813415026758,
+          "run_id": "latent-scaling-extended-e10-seed1-sigma1.5",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 1.5,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.9767099960008636,
+          "run_id": "latent-scaling-extended-e10-seed1-sigma1.75",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 1.75,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.8908326310047414,
+          "run_id": "latent-scaling-extended-e10-seed1-sigma2",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 2.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.645342942996649,
+          "run_id": "latent-scaling-extended-e10-seed2-sigma1",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 1.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.7001820850127842,
+          "run_id": "latent-scaling-extended-e10-seed2-sigma1.3",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 1.3,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.7188225029967725,
+          "run_id": "latent-scaling-extended-e10-seed2-sigma1.5",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 1.5,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.756907911010785,
+          "run_id": "latent-scaling-extended-e10-seed2-sigma1.75",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 1.75,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.699696903990116,
+          "run_id": "latent-scaling-extended-e10-seed2-sigma2",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 2.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        }
+      ],
+      "config": {
+        "batch_size": 256,
+        "deterministic_algorithms": true,
+        "export": "starter PNG RGB 28x28; negative raw values clipped, no rescaling",
+        "num_samples": 10000,
+        "prior": "z = sigma * eps; eps ~ N(0,I), dimension 100",
+        "rng": "private CPU RNG seeded before generator initialization; full-batch draws",
+        "seeds": [
+          1,
+          2
+        ],
+        "sigmas": [
+          1.0,
+          1.3,
+          1.5,
+          1.75,
+          2.0
+        ],
+        "training": "none; same frozen G for every condition"
+      },
+      "evaluation_source_sha256": {
+        "local_metrics.py": "fd2ccb62477c4578d09e34651021aa1666803ee6aeec6137262ae605cf24f353",
+        "scripts/evaluate_frozen.py": "3491eb12454d101fe8b9af537183ad1e1f52061f91a4054d08047118cfaa4cea",
+        "scripts/evaluate_local.py": "b0f9bc74f583e21925d53c18d32b57b98adbe65446e1e531a579d68d0b6d8150"
+      },
+      "evaluation_summary_sha256": "54b13d38645aabde45f8c76044888917329eb29b05d3ab20743c88e86e9d4185",
+      "evaluation_total_seconds": 69.30460488301469,
+      "generation_summary_sha256": "d04d418672b5174dc8c4d8c6c510add255659e988c23cd0d9c8022ad186525c5",
+      "generation_total_seconds": 47.73169917499763,
+      "git_status_at_launch": "M README.md\n M experiments/baseline.md\n M experiments/ledger.jsonl\n M generate.py\n M scripts/baseline.py\n?? experiments/latent-scaling-baseline-e10/\n?? experiments/latent-scaling.md\n?? experiments/local-metrics-mnist64-k3/\n?? experiments/local-metrics.md\n?? local_metrics.py\n?? sampling.py\n?? scripts/evaluate_frozen.py\n?? scripts/evaluate_local.py\n?? scripts/latent_scaling.py\n?? tests/",
+      "hardware": {
+        "cpu": "AMD Ryzen 3 PRO 5450U with Radeon Graphics",
+        "device": "cpu",
+        "gpu": null,
+        "logical_cpus": 8,
+        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+        "torch_threads": 2
+      },
+      "local_evaluation_dir": "runs/local-metrics-extended-e10",
+      "local_generation_dir": "runs/latent-scaling-extended-e10",
+      "name": "latent-scaling-extended-e10",
+      "packages": {
+        "numpy": "2.5.4",
+        "pillow": "13.0.0",
+        "scikit-learn": "1.9.1",
+        "scipy": "1.18.1",
+        "torch": "2.15.0+cpu",
+        "torchvision": "0.29.2+cpu",
+        "tqdm": "4.70.1"
+      },
+      "reference_features_sha256": "96d67ecf381743220d5d365ff8bba55fdeda884b7177933dd92c3598bf0706c8",
+      "role": "discovery",
+      "source_sha256": {
+        "generate.py": "4cfacb4518018637ab665e98cf190d85b06ebd3b5cc6d495c53257e3c4f33f09",
+        "model.py": "895b18cd9135a400cf92d0ac987d28a4139acacb562bf95bbd6d9f32285af28f",
+        "requirements.txt": "039fa8892abe7df11e6a3c4765430b1d231ef5a4b3a24761249e5cb010f1730e",
+        "sampling.py": "f2d02fefa8bfd1b6ea3507dd0346780c6c99b57bb99f3cacf5cb0d22eeb4183e",
+        "scripts/latent_scaling.py": "4bff7bc2d1d6d36072afa9d43a38c4b2501c5fde1fca7b63011693bc60c503c7"
+      },
+      "timing_protocol": "Per-condition load + weight snapshot + noise hashing/raw diagnostics + inference + all PNG writes; excludes Python imports, source recording, post-export validation and grids. Same protocol for sigma=1. Not directly comparable to subprocess-based baseline timings."
+    },
+    {
+      "commit": "10d864dcdcb251fd05d4bb0d1727381b5f4b7509",
+      "conditions": [
+        {
+          "base_noise_sha256": "dfc4d22989b77d7e4e047576dacac091864b3deab8ef7d7d6c8d282fe21f897e",
+          "generation_seconds": 3.2308505440014414,
+          "run_id": "latent-scaling-confirmation-e10-seed3-sigma1",
+          "sample_count": 10000,
+          "seed": 3,
+          "sigma": 1.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "dfc4d22989b77d7e4e047576dacac091864b3deab8ef7d7d6c8d282fe21f897e",
+          "generation_seconds": 3.3554801489808597,
+          "run_id": "latent-scaling-confirmation-e10-seed3-sigma1.3",
+          "sample_count": 10000,
+          "seed": 3,
+          "sigma": 1.3,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "dfc4d22989b77d7e4e047576dacac091864b3deab8ef7d7d6c8d282fe21f897e",
+          "generation_seconds": 4.432171117019607,
+          "run_id": "latent-scaling-confirmation-e10-seed3-sigma1.75",
+          "sample_count": 10000,
+          "seed": 3,
+          "sigma": 1.75,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "dfc4d22989b77d7e4e047576dacac091864b3deab8ef7d7d6c8d282fe21f897e",
+          "generation_seconds": 3.9251506729924586,
+          "run_id": "latent-scaling-confirmation-e10-seed3-sigma2",
+          "sample_count": 10000,
+          "seed": 3,
+          "sigma": 2.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        }
+      ],
+      "config": {
+        "batch_size": 256,
+        "deterministic_algorithms": true,
+        "export": "starter PNG RGB 28x28; negative raw values clipped, no rescaling",
+        "num_samples": 10000,
+        "prior": "z = sigma * eps; eps ~ N(0,I), dimension 100",
+        "rng": "private CPU RNG seeded before generator initialization; full-batch draws",
+        "seeds": [
+          3
+        ],
+        "sigmas": [
+          1.0,
+          1.3,
+          1.75,
+          2.0
+        ],
+        "training": "none; same frozen G for every condition"
+      },
+      "evaluation_source_sha256": {
+        "local_metrics.py": "fd2ccb62477c4578d09e34651021aa1666803ee6aeec6137262ae605cf24f353",
+        "scripts/evaluate_frozen.py": "3491eb12454d101fe8b9af537183ad1e1f52061f91a4054d08047118cfaa4cea",
+        "scripts/evaluate_local.py": "b0f9bc74f583e21925d53c18d32b57b98adbe65446e1e531a579d68d0b6d8150"
+      },
+      "evaluation_summary_sha256": "02cc691b90b059275514b4303049f999d45a7a9170fe072cd98e4772daeaec29",
+      "evaluation_total_seconds": 26.397938188980334,
+      "generation_summary_sha256": "7fbc4f87febc3d3bd32dfc52bdd3fa6759a4067b54869507c05ee085ea5745fb",
+      "generation_total_seconds": 18.906089933996554,
+      "git_status_at_launch": "M README.md\n M experiments/baseline.md\n M experiments/ledger.jsonl\n M generate.py\n M scripts/baseline.py\n?? experiments/latent-scaling-baseline-e10/\n?? experiments/latent-scaling-extension-selection.json\n?? experiments/latent-scaling.md\n?? experiments/local-metrics-mnist64-k3/\n?? experiments/local-metrics.md\n?? local_metrics.py\n?? sampling.py\n?? scripts/evaluate_frozen.py\n?? scripts/evaluate_local.py\n?? scripts/latent_scaling.py\n?? tests/",
+      "hardware": {
+        "cpu": "AMD Ryzen 3 PRO 5450U with Radeon Graphics",
+        "device": "cpu",
+        "gpu": null,
+        "logical_cpus": 8,
+        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+        "torch_threads": 2
+      },
+      "local_evaluation_dir": "runs/local-metrics-confirmation-e10",
+      "local_generation_dir": "runs/latent-scaling-confirmation-e10",
+      "name": "latent-scaling-confirmation-e10",
+      "packages": {
+        "numpy": "2.5.4",
+        "pillow": "13.0.0",
+        "scikit-learn": "1.9.1",
+        "scipy": "1.18.1",
+        "torch": "2.15.0+cpu",
+        "torchvision": "0.29.2+cpu",
+        "tqdm": "4.70.1"
+      },
+      "reference_features_sha256": "96d67ecf381743220d5d365ff8bba55fdeda884b7177933dd92c3598bf0706c8",
+      "role": "confirmation",
+      "source_sha256": {
+        "generate.py": "4cfacb4518018637ab665e98cf190d85b06ebd3b5cc6d495c53257e3c4f33f09",
+        "model.py": "895b18cd9135a400cf92d0ac987d28a4139acacb562bf95bbd6d9f32285af28f",
+        "requirements.txt": "039fa8892abe7df11e6a3c4765430b1d231ef5a4b3a24761249e5cb010f1730e",
+        "sampling.py": "f2d02fefa8bfd1b6ea3507dd0346780c6c99b57bb99f3cacf5cb0d22eeb4183e",
+        "scripts/latent_scaling.py": "4bff7bc2d1d6d36072afa9d43a38c4b2501c5fde1fca7b63011693bc60c503c7"
+      },
+      "timing_protocol": "Per-condition load + weight snapshot + noise hashing/raw diagnostics + inference + all PNG writes; excludes Python imports, source recording, post-export validation and grids. Same protocol for sigma=1. Not directly comparable to subprocess-based baseline timings."
+    },
+    {
+      "commit": "10d864dcdcb251fd05d4bb0d1727381b5f4b7509",
+      "conditions": [
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.2709436799923424,
+          "run_id": "latent-scaling-upper-e10-seed1-sigma1",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 1.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.5371851889940444,
+          "run_id": "latent-scaling-upper-e10-seed1-sigma1.75",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 1.75,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 4.190115753997816,
+          "run_id": "latent-scaling-upper-e10-seed1-sigma2",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 2.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 4.181436257000314,
+          "run_id": "latent-scaling-upper-e10-seed1-sigma2.25",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 2.25,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.7870312629966065,
+          "run_id": "latent-scaling-upper-e10-seed1-sigma2.5",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 2.5,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "927855a9e224576ebcc3d18402d7b5f3314f175e7a93f3dcf7d20550aac3298e",
+          "generation_seconds": 3.6763260410225485,
+          "run_id": "latent-scaling-upper-e10-seed1-sigma3",
+          "sample_count": 10000,
+          "seed": 1,
+          "sigma": 3.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.584071022021817,
+          "run_id": "latent-scaling-upper-e10-seed2-sigma1",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 1.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.742456181003945,
+          "run_id": "latent-scaling-upper-e10-seed2-sigma1.75",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 1.75,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.7432707010011654,
+          "run_id": "latent-scaling-upper-e10-seed2-sigma2",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 2.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.7468065450084396,
+          "run_id": "latent-scaling-upper-e10-seed2-sigma2.25",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 2.25,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.6867296770215034,
+          "run_id": "latent-scaling-upper-e10-seed2-sigma2.5",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 2.5,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        },
+        {
+          "base_noise_sha256": "30f67c578606deb4fa0cbc94a22dbe1d29908093b8da38c07f5e0f2a01fb7cb5",
+          "generation_seconds": 3.7435041590069886,
+          "run_id": "latent-scaling-upper-e10-seed2-sigma3",
+          "sample_count": 10000,
+          "seed": 2,
+          "sigma": 3.0,
+          "validation": {
+            "all_png_rgb_28x28": true,
+            "checkpoint_unchanged": true,
+            "exact_count": true,
+            "generator_weights_unchanged": true,
+            "paired_noise": true
+          }
+        }
+      ],
+      "config": {
+        "batch_size": 256,
+        "deterministic_algorithms": true,
+        "export": "starter PNG RGB 28x28; negative raw values clipped, no rescaling",
+        "num_samples": 10000,
+        "prior": "z = sigma * eps; eps ~ N(0,I), dimension 100",
+        "rng": "private CPU RNG seeded before generator initialization; full-batch draws",
+        "seeds": [
+          1,
+          2
+        ],
+        "sigmas": [
+          1.0,
+          1.75,
+          2.0,
+          2.25,
+          2.5,
+          3.0
+        ],
+        "training": "none; same frozen G for every condition"
+      },
+      "evaluation_source_sha256": {
+        "local_metrics.py": "fd2ccb62477c4578d09e34651021aa1666803ee6aeec6137262ae605cf24f353",
+        "scripts/evaluate_frozen.py": "3491eb12454d101fe8b9af537183ad1e1f52061f91a4054d08047118cfaa4cea",
+        "scripts/evaluate_local.py": "b0f9bc74f583e21925d53c18d32b57b98adbe65446e1e531a579d68d0b6d8150"
+      },
+      "evaluation_summary_sha256": "097c13d646c11f33b970a57f9d3ca598e9402d8ca19f1a3454a7fc6843ffda36",
+      "evaluation_total_seconds": 87.00180156499846,
+      "generation_summary_sha256": "7eaf253128647a8b7870da564a190e97fd1cedf0f9c41780fe811c3ed2b04231",
+      "generation_total_seconds": 56.93140067200875,
+      "git_status_at_launch": "M README.md\n M experiments/baseline.md\n M experiments/ledger.jsonl\n M generate.py\n M scripts/baseline.py\n?? experiments/latent-scaling-baseline-e10/\n?? experiments/latent-scaling-confirmation-e10/\n?? experiments/latent-scaling-extended-e10/\n?? experiments/latent-scaling-extended.md\n?? experiments/latent-scaling-extension-selection.json\n?? experiments/latent-scaling.md\n?? experiments/local-metrics-confirmation-e10/\n?? experiments/local-metrics-extended-e10/\n?? experiments/local-metrics-mnist64-k3/\n?? experiments/local-metrics.md\n?? local_metrics.py\n?? sampling.py\n?? scripts/evaluate_frozen.py\n?? scripts/evaluate_local.py\n?? scripts/latent_scaling.py\n?? tests/",
+      "hardware": {
+        "cpu": "AMD Ryzen 3 PRO 5450U with Radeon Graphics",
+        "device": "cpu",
+        "gpu": null,
+        "logical_cpus": 8,
+        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+        "torch_threads": 2
+      },
+      "local_evaluation_dir": "runs/local-metrics-upper-e10",
+      "local_generation_dir": "runs/latent-scaling-upper-e10",
+      "name": "latent-scaling-upper-e10",
+      "packages": {
+        "numpy": "2.5.4",
+        "pillow": "13.0.0",
+        "scikit-learn": "1.9.1",
+        "scipy": "1.18.1",
+        "torch": "2.15.0+cpu",
+        "torchvision": "0.29.2+cpu",
+        "tqdm": "4.70.1"
+      },
+      "reference_features_sha256": "96d67ecf381743220d5d365ff8bba55fdeda884b7177933dd92c3598bf0706c8",
+      "role": "discovery",
+      "source_sha256": {
+        "generate.py": "4cfacb4518018637ab665e98cf190d85b06ebd3b5cc6d495c53257e3c4f33f09",
+        "model.py": "895b18cd9135a400cf92d0ac987d28a4139acacb562bf95bbd6d9f32285af28f",
+        "requirements.txt": "039fa8892abe7df11e6a3c4765430b1d231ef5a4b3a24761249e5cb010f1730e",
+        "sampling.py": "f2d02fefa8bfd1b6ea3507dd0346780c6c99b57bb99f3cacf5cb0d22eeb4183e",
+        "scripts/latent_scaling.py": "4bff7bc2d1d6d36072afa9d43a38c4b2501c5fde1fca7b63011693bc60c503c7"
+      },
+      "timing_protocol": "Per-condition load + weight snapshot + noise hashing/raw diagnostics + inference + all PNG writes; excludes Python imports, source recording, post-export validation and grids. Same protocol for sigma=1. Not directly comparable to subprocess-based baseline timings."
+    }
+  ],
+  "study": "I1-latent-scaling",
+  "unique_evaluations": 28
+}
