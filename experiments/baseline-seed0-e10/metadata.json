@@ -1,0 +1,153 @@
+{
+  "checkpoint_sha256": {
+    "D.pth": "e8525613cbc422405b2c20941a9a72866763b393dec59fb7b9a61f004b02e221",
+    "G.pth": "5b7db542088d964e85592ffe2faf9acb351e5ee9639ccee4f047791a32b0628e"
+  },
+  "commit": "1a96c9a3096ffe3d70d669030e0bed437dd24bb0",
+  "config": {
+    "batch_size": 64,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "data_path": "/home/arielgg46/AGG/IASD/1st Semester Courses/Data Science Lab/A2/masteriasd-datalab-project-a2-group-25/data",
+    "drop_last": false,
+    "epochs": 10,
+    "eps": 1e-08,
+    "export": "unmodified generate.py: save_image without rescaling; negative values clipped",
+    "generation_batch_size": 256,
+    "generation_rng": "seed before runpy executes generate.py, including model initialization",
+    "generation_seed": 1,
+    "latent_scale": 1.0,
+    "loss_D": "BCE(D(real),1) + BCE(D(G(z)),0)",
+    "loss_G": "BCE(D(G(z)),1)",
+    "lr_D": 0.0002,
+    "lr_G": 0.0002,
+    "num_workers": 0,
+    "optimizer": "Adam",
+    "pin_memory": false,
+    "preprocessing": "ToTensor; Normalize(mean=0.5, std=0.5); flatten to 784",
+    "prior": "N(0,I), latent dimension 100",
+    "seed": 0,
+    "weight_decay": 0
+  },
+  "dataset": {
+    "examples": 60000,
+    "name": "MNIST",
+    "raw_sha256": {
+      "t10k-images-idx3-ubyte": "0fa7898d509279e482958e8ce81c8e77db3f2f8254e26661ceb7762c4d494ce7",
+      "t10k-images-idx3-ubyte.gz": "8d422c7b0a1c1c79245a5bcf07fe86e33eeafee792b84584aec276f5a2dbc4e6",
+      "t10k-labels-idx1-ubyte": "ff7bcfd416de33731a308c3f266cc351222c34898ecbeaf847f06e48f7ec33f2",
+      "t10k-labels-idx1-ubyte.gz": "f7ae60f92e00ec6debd23a6088c31dbd2371eca3ffa0defaefb259924204aec6",
+      "train-images-idx3-ubyte": "ba891046e6505d7aadcbbe25680a0738ad16aec93bde7f9b65e87a2fc25776db",
+      "train-images-idx3-ubyte.gz": "440fcabf73cc546fa21475e81ea370265605f56be210a4024d2ca8f203523609",
+      "train-labels-idx1-ubyte": "65a50cbbf4e906d70832878ad85ccda5333a97f0f4c3dd2ef09a8a9eef7101c5",
+      "train-labels-idx1-ubyte.gz": "3552534a0a558bbed6aed32b30c495cca23d567ec52cac8be1a0730e8010255c"
+    },
+    "split": "train"
+  },
+  "dataset_setup_seconds": 0.12485367999761365,
+  "determinism": {
+    "algorithms": true,
+    "cross_hardware_bitwise_reproducibility": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true
+  },
+  "discriminator": {
+    "calibration": "not evaluated",
+    "equal_real_fake_priors": true,
+    "hidden_activation": "LeakyReLU(0.2)",
+    "layers": [
+      784,
+      1024,
+      512,
+      256,
+      1
+    ],
+    "output_activation": "sigmoid"
+  },
+  "discriminator_steps": 9380,
+  "finished_at_utc": "2026-10-31T11:45:05.095756+00:00",
+  "generation": {
+    "batches": 40,
+    "candidate_images": 10240,
+    "output_images": 10000,
+    "rejection_acceptance_rate": 1.0
+  },
+  "generation_seconds": 5.972964976012008,
+  "generator": {
+    "hidden_activation": "LeakyReLU(0.2)",
+    "layers": [
+      100,
+      256,
+      512,
+      1024,
+      784
+    ],
+    "output_activation": "tanh",
+    "parameters": 1486352
+  },
+  "generator_steps": 9380,
+  "git_status": "M README.md\n?? .gitignore\n?? experiments/\n?? scripts/baseline.py",
+  "hardware": {
+    "cpu": "AMD Ryzen 3 PRO 5450U with Radeon Graphics",
+    "device": "cpu",
+    "gpu": null,
+    "logical_cpus": 8,
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+    "torch_threads": 2
+  },
+  "invocation": [
+    "scripts/baseline.py",
+    "--run-dir",
+    "runs/baseline-seed0-e10",
+    "--epochs",
+    "10",
+    "--seed",
+    "0",
+    "--generation-seed",
+    "1",
+    "--generation-batch-size",
+    "256"
+  ],
+  "method": "B0-starter",
+  "official_metrics": {
+    "FID": null,
+    "precision": null,
+    "recall": null,
+    "status": "not yet evaluated: official evaluator unavailable"
+  },
+  "original_checkpoint_sha256": "9e40aa2235241c857f34101e1679d63dfc85b78987cced28cfaba7ee2624e387",
+  "protocol_differences_from_train_py": [
+    "Explicit seeds and deterministic settings; CPU thread count recorded.",
+    "DataLoader num_workers=0 and pin_memory=False for this local run.",
+    "Unused test loader omitted; all training examples retained.",
+    "Save final G and D at any epoch count in an isolated directory; record losses and metadata."
+  ],
+  "python": "3.14.7 | packaged by Anaconda, Inc. | (main, Aug 14 2026, 10:21:40) [GCC 14.3.0]",
+  "run_id": "baseline-seed0-e10",
+  "source_sha256": {
+    ".gitignore": "832bc6e827ee4a95c06eb7ed833f301cc134c2a2d7714226b2d7a21c7b4e8fc9",
+    "README.md": "1433752f701eae14f4894ccb317bfbcc527604448fabeea14923baa89bcaea0d",
+    "generate.py": "96ba28bcf16e1a865fb88f5cded7f3e35dc6043c3dbad29f539f1ffc36abfe6d",
+    "model.py": "895b18cd9135a400cf92d0ac987d28a4139acacb562bf95bbd6d9f32285af28f",
+    "requirements.txt": "039fa8892abe7df11e6a3c4765430b1d231ef5a4b3a24761249e5cb010f1730e",
+    "scripts/baseline.py": "9a59602bd6c13fc2c685b8fa22e763b5fcc82385351cc1c933398c446b61abb6",
+    "scripts/generate.sh": "cfc44431d5a28ee7488c31ee44183c3f805aa40cee7c7ec4441a2f673681998b",
+    "scripts/train.sh": "40b558fd0f3b15366729f21abc429f471ce39fe086136cd75580424b59c5ebcd",
+    "train.py": "e41a0cecd1f8d59a69492c3a94035121f364ca65616af6a1779527d639520a3d",
+    "utils.py": "920342394ec2146ad047e8810102e9a6b204679ad98d97857323da595c61c4db"
+  },
+  "started_at_utc": "2026-10-31T11:37:10.558474+00:00",
+  "status": "completed",
+  "total_seconds": 474.74862852098886,
+  "training_seconds": 467.4652823499928,
+  "validation": {
+    "all_png_rgb_28x28": true,
+    "checkpoint_files_unchanged_after_generation": true,
+    "generator_source_unchanged": true,
+    "generator_weights_trained": true,
+    "original_checkpoint_preserved": true,
+    "sample_count": 10000
+  }
+}

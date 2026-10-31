@@ -1,0 +1,66 @@
+# Local Codex instructions and agent state
+codex.md
+.codex/
+.agents/
+
+# Python environments, bytecode and packaging
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Test, coverage, type-checking and lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Notebooks and editor state
+.ipynb_checkpoints/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Downloaded data and generated experiment artifacts
+/data/
+/samples/
+/runs/
+/outputs/
+/wandb/
+/mlruns/
+/lightning_logs/
+/tensorboard/
+slurm-*.out
+*.log
+*.tmp
+
+# Keep checkpoints/ versionable for the required submission.
+# Put intermediate/experimental checkpoints under runs/ instead.
+
+# Local credentials and machine-specific settings
+.env
+.env.*
+!.env.example
+!.env.template
+.aws/
+*.pem
+*.key
+
+# Operating-system metadata
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini

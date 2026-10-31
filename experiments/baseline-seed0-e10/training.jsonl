@@ -1,0 +1,10 @@
+{"epoch": 1, "steps_total": 938, "examples": 60000, "loss_D": 1.0758732133090496, "loss_G": 2.5128080560604733, "seconds": 46.76698189598392}
+{"epoch": 2, "steps_total": 1876, "examples": 60000, "loss_D": 1.2193370436350504, "loss_G": 2.025567400445541, "seconds": 46.37098348099971}
+{"epoch": 3, "steps_total": 2814, "examples": 60000, "loss_D": 1.2132746720983336, "loss_G": 1.7725200757741928, "seconds": 47.89948716800427}
+{"epoch": 4, "steps_total": 3752, "examples": 60000, "loss_D": 0.7263063270628142, "loss_G": 5.0874716807683305, "seconds": 47.08818083800725}
+{"epoch": 5, "steps_total": 4690, "examples": 60000, "loss_D": 0.8641825014948845, "loss_G": 3.435377724901835, "seconds": 46.66090303598321}
+{"epoch": 6, "steps_total": 5628, "examples": 60000, "loss_D": 0.9096521061102549, "loss_G": 2.2878084223429362, "seconds": 46.188801126991166}
+{"epoch": 7, "steps_total": 6566, "examples": 60000, "loss_D": 0.6045895900885264, "loss_G": 2.804861295191447, "seconds": 46.54635568300728}
+{"epoch": 8, "steps_total": 7504, "examples": 60000, "loss_D": 0.6597504824002584, "loss_G": 3.056108679707845, "seconds": 46.061942336993525}
+{"epoch": 9, "steps_total": 8442, "examples": 60000, "loss_D": 0.7295892627398173, "loss_G": 2.7254990418752034, "seconds": 46.94912972601014}
+{"epoch": 10, "steps_total": 9380, "examples": 60000, "loss_D": 0.6673808481693267, "loss_G": 2.6506548018137615, "seconds": 46.931343829026446}
