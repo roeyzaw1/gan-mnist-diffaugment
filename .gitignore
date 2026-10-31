@@ -47,6 +47,17 @@ slurm-*.out
 *.log
 *.tmp
 
+# Experimental run directories stay in runs/. Only curated portable evidence
+# and a single reusable evaluator are allowed under new experiments/ folders.
+# Already tracked shared-baseline fixtures remain tracked.
+/experiments/*/
+!/experiments/figures/
+!/experiments/local-metrics-mnist64-k3/
+/experiments/local-metrics-mnist64-k3/*
+!/experiments/local-metrics-mnist64-k3/summary.json
+!/experiments/local-metrics-mnist64-k3/extractor.pth
+!/experiments/local-metrics-mnist64-k3/split-indices.npz
+
 # Keep checkpoints/ versionable for the required submission.
 # Put intermediate/experimental checkpoints under runs/ instead.
 

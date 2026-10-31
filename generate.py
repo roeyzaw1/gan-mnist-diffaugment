@@ -1,57 +1,51 @@
-import torch 
-import torchvision
-import os
+"""Generate exactly 10,000 PNGs with optional inference-time latent scaling."""
+
 import argparse
+from pathlib import Path
+
+import torch
+
+from sampling import (default_device, export_pngs, iter_candidates,
+                      load_generator, load_seeded_generator, validate_sampling)
 
 
-from model import Generator
-from utils import load_model
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate Normalizing Flow.')
-    parser.add_argument("--batch_size", type=int, default=2048,
-                      help="The batch size to use for training.")
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--batch_size", type=int, default=2048)
+    parser.add_argument("--sigma", type=float, default=1.0, help="Scale of Gaussian latent noise; baseline: 1.")
+    parser.add_argument("--seed", type=int, default=None, help="Optional seed, including model initialization.")
+    parser.add_argument("--checkpoint", default="checkpoints/G.pth")
+    parser.add_argument("--output-dir", "--output_dir", default=None)
+    parser.add_argument("--overwrite", action="store_true", help="Allow reusing an explicit output directory.")
     args = parser.parse_args()
+    try:
+        validate_sampling(10000, args.batch_size, args.sigma)
+        if args.seed is not None and not 0 <= args.seed < 2**63:
+            raise ValueError("seed must be in [0, 2**63)")
+        if args.output_dir is not None:
+            output = Path(args.output_dir)
+            if output.exists() and (not output.is_dir() or (any(output.iterdir()) and not args.overwrite)):
+                raise ValueError("Explicit output directory already contains files; use a new path or --overwrite")
+    except ValueError as error:
+        parser.error(str(error))
 
-
-
-    if torch.cuda.is_available():
-        device = torch.device("cuda")
-        print(f"Using device: CUDA")
-    elif torch.backends.mps.is_available():
-        device = torch.device("mps")
-        print(f"Using device: MPS (Apple Metal)")
+    device = default_device()
+    print(f"Using device: {device}")
+    print("Model Loading...")
+    if args.seed is None:
+        model, noise_rng = load_generator(args.checkpoint, device), None
     else:
-        device = torch.device("cpu")
-        print(f"Using device: CPU")
-
-    print('Model Loading...')
-    # Model Pipeline
-    mnist_dim = 784
-
-    model = Generator(g_output_dim=mnist_dim).to(device)
-    model = load_model(model, 'checkpoints', device)
+        model, noise_rng = load_seeded_generator(args.checkpoint, args.seed, device)
     if torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
     model.eval()
-
-    print('Model loaded.')
-
-
-
-    print('Start Generating')
-    os.makedirs('samples', exist_ok=True)
-
-    n_samples = 0
-    with torch.no_grad():
-        while n_samples<10000:
-            z = torch.randn(args.batch_size, 100).to(device)
-            x = model(z)
-            x = x.reshape(args.batch_size, 28, 28)
-            for k in range(x.shape[0]):
-                if n_samples<10000:
-                    torchvision.utils.save_image(x[k:k+1], os.path.join('samples', f'{n_samples}.png'))         
-                    n_samples += 1
+    print("Model loaded.")
+    print("Start Generating")
+    batches = iter_candidates(model, 10000, args.batch_size, args.sigma, noise_rng)
+    # The required default invocation retains the starter's overwrite semantics.
+    export_pngs(batches, args.output_dir or "samples",
+                overwrite=args.output_dir is None or args.overwrite)
 
 
-    
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,121 @@
+{
+  "baseline_control": {
+    "FD_MNIST": 774.3911028226338,
+    "evaluation_seconds": 5.803001567983301,
+    "image_bytes_sha256": "f1b5d403e38b152cd7a9ee754097a203c901a84fb20dd460d139940b7f502a0d",
+    "mean_classifier_confidence": 0.7297877073287964,
+    "precision": 0.3371,
+    "predicted_class_counts": [
+      24,
+      4933,
+      867,
+      2342,
+      86,
+      889,
+      46,
+      351,
+      132,
+      330
+    ],
+    "recall": 0.0001,
+    "run_id": "latent-scaling-baseline-e10-seed1-sigma1",
+    "seed": 1,
+    "sigma": 1.0
+  },
+  "commit": "10d864dcdcb251fd05d4bb0d1727381b5f4b7509",
+  "controls": {
+    "black_images": {
+      "FD_MNIST": 1753.1334468025602,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    "real_vs_real": {
+      "FD_MNIST": 0.467518043860764,
+      "precision": 0.8952,
+      "recall": 0.9065
+    }
+  },
+  "data": {
+    "preprocessing": "PNG grayscale uint8 / 255, then (x-0.5)/0.5; same normalization for real data",
+    "raw_sha256": {
+      "train-images-idx3-ubyte": "ba891046e6505d7aadcbbe25680a0738ad16aec93bde7f9b65e87a2fc25776db",
+      "train-labels-idx1-ubyte": "65a50cbbf4e906d70832878ad85ccda5333a97f0f4c3dd2ef09a8a9eef7101c5"
+    },
+    "reference_not_seen_by_classifier": true,
+    "reference_seen_by_GAN": true,
+    "source": "MNIST train split only; MNIST test unused",
+    "split_sha256": "794e59d2e203c19c0f3b1dd96864d21efd8d46332de1a981c3bffc4acde6db98",
+    "split_sizes": {
+      "classifier_train": 35000,
+      "classifier_validation": 5000,
+      "real_control": 10000,
+      "real_reference": 10000
+    }
+  },
+  "environment": {
+    "device": "cpu",
+    "numpy": "2.5.4",
+    "threads": 2,
+    "torch": "2.15.0+cpu"
+  },
+  "extractor": {
+    "architecture": "MNISTFeatures(\n  (conv): Sequential(\n    (0): Conv2d(1, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n    (1): ReLU()\n    (2): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n    (3): Conv2d(16, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n    (4): ReLU()\n    (5): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n  )\n  (hidden): Linear(in_features=1568, out_features=64, bias=True)\n  (head): Linear(in_features=64, out_features=10, bias=True)\n)",
+    "checkpoint_sha256": "bdaaa5980696a90be7fba00b4ed5a911d0cd3e9dfb07dfa9f88cdbc83856c385",
+    "control_accuracy": 0.9751999974250793,
+    "feature_dimension": 64,
+    "reference_accuracy": 0.978600025177002,
+    "selected_epoch": 5,
+    "training": [
+      {
+        "epoch": 1,
+        "loss": 0.6191435845579419,
+        "seconds": 6.921720992977498,
+        "validation_accuracy": 0.9211999773979187
+      },
+      {
+        "epoch": 2,
+        "loss": 0.1545500807779176,
+        "seconds": 7.021949752001092,
+        "validation_accuracy": 0.9616000056266785
+      },
+      {
+        "epoch": 3,
+        "loss": 0.09114535999766418,
+        "seconds": 7.027183424972463,
+        "validation_accuracy": 0.9711999893188477
+      },
+      {
+        "epoch": 4,
+        "loss": 0.07160666077392441,
+        "seconds": 6.981716228008736,
+        "validation_accuracy": 0.9751999974250793
+      },
+      {
+        "epoch": 5,
+        "loss": 0.05565174721138818,
+        "seconds": 6.996996927977307,
+        "validation_accuracy": 0.9769999980926514
+      }
+    ],
+    "validation_accuracy": 0.9769999980926514
+  },
+  "metric": {
+    "chunk_size": 512,
+    "distance": "FD-MNIST: Frechet Gaussian distance of raw 64-D classifier ReLU features; not Inception FID",
+    "k": 3,
+    "n_generated": 10000,
+    "n_real": 10000,
+    "precision_recall": "k-NN manifold membership, Euclidean metric, k=3, exact blockwise float64"
+  },
+  "official": false,
+  "original_run_summary": "runs/local-metrics-mnist64-k3/summary.json",
+  "original_run_total_seconds": 113.43406062098802,
+  "protocol": "local-MNIST64-k3-v1",
+  "seed": 2026,
+  "source_sha256": {
+    "local_metrics.py": "fd2ccb62477c4578d09e34651021aa1666803ee6aeec6137262ae605cf24f353",
+    "scripts/evaluate_local.py": "b0f9bc74f583e21925d53c18d32b57b98adbe65446e1e531a579d68d0b6d8150"
+  },
+  "started_at_utc": "2026-10-31T12:35:08.527425+00:00",
+  "status": "completed"
+}

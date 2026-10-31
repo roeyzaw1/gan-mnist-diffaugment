@@ -133,7 +133,7 @@ Each run contains:
 - `samples/0.png` through `samples/9999.png`, `sample-grid.png` (first 64 exported
   images, without selection), and `generation.log`.
 
-Generation executes the unmodified `generate.py` from the isolated run directory
+Generation executes the starter-compatible `generate.py` at `sigma=1` from the isolated run directory
 with a separate RNG seed and batch size 256. Its measured time includes process
 startup, checkpoint loading, inference, and writing all 10,000 PNGs; subsequent
 validation and grid creation are excluded. The final batch generates 240 unused
@@ -161,3 +161,60 @@ The existing checkpoint is preserved during baseline runs. The cluster scripts
 still expect an environment named `venv/`; the commands above use `.venv/` for
 local execution.
 
+## Shared sampling and local evaluation
+
+The required `python generate.py --batch_size 256` invocation still loads
+`checkpoints/G.pth` and writes exactly 10,000 RGB PNGs of size 28×28 to `samples/`.
+Negative tanh outputs are clipped without rescaling, preserving the starter.
+The default sigma is 1; the default RNG is unseeded. Optional flags select a
+checkpoint, generation seed, Gaussian latent scale and output directory:
+
+```bash
+python generate.py --batch_size 256 --seed 1 \
+  --checkpoint checkpoints/baseline-seed0-e10/G.pth \
+  --output-dir runs/shared-baseline-samples
+```
+
+An explicit output directory must be new or empty unless `--overwrite` is passed.
+The default `samples/` path retains the starter's overwrite behavior.
+`sampling.generate_candidates(n, seed, checkpoint, sigma=1, batch_size=256)`
+returns raw CPU tensors `(N,1,28,28)` in `[-1,1]`. With `return_noise=True` it also
+returns the unscaled `(N,100)` noise. Scaling is `z = sigma * eps`, not coordinate
+truncation. No training or rejection sampling is performed.
+
+Explicit seeds include model initialization and use a private CPU RNG. Keep
+seed and batch size fixed for paired comparisons. Full final batches are drawn
+before discarding overflow, matching the starter. Exact reproducibility across
+hardware, package versions or thread counts is not guaranteed.
+
+Use the shared [local-MNIST64-k3-v1 protocol](experiments/local-metrics.md) to
+compare methods with one frozen extractor and one real-reference set. These
+are local development metrics; official FID/precision/recall remain pending.
+The evaluator accepts a JSON manifest listing sample directories, checkpoints,
+methods and configurations, with no required sigma or folder layout:
+
+```bash
+python scripts/evaluate_frozen.py --manifest runs/comparison-inputs.json \
+  --run-dir runs/comparison-local-metrics
+```
+
+See the protocol page for the manifest schema and how to reproduce the extractor.
+The frozen evaluator verifies extractor, split, dataset and metric-code hashes.
+Every condition must contain exactly 10,000 numbered images. Run summaries are
+written atomically and record setup/execution failures and interruptions.
+
+Follow the [experiment evidence policy](experiments/README.md). Full samples,
+logs, checkpoints and source snapshots for individual runs stay under ignored
+`runs/`; only compact reviewed evidence and selected reusable models are shared.
+Workstreams keep separate ledger files to avoid interleaving unrelated results.
+
+Run the checks with the standard-library runner, without extra dependencies:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Tests compare all 10,000 PNGs against the archived starter, check sampling and
+RNG invariants, verify metric formulas against analytical/brute-force examples,
+and validate experiment inputs and output protection. CPU was tested locally;
+CUDA/MPS execution still needs hardware verification.

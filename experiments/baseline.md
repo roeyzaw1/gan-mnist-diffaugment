@@ -49,7 +49,13 @@ including setup, checkpoint saving and validation, was 474.749 seconds.
 
 **Official FID, precision and recall: not yet evaluated.** No official evaluator
 or reference feature protocol is present in the repository. The ledger uses
-`null` metrics with an explicit explanation; no substitute metric is reported.
+`null` official metrics with an explicit explanation; no local metric is reported
+as an official result.
+
+Subsequent [local development evaluation](local-metrics.md) separately records
+FD-MNIST and k-NN precision/recall. For this baseline's seed-1 exported images:
+FD-MNIST **774.39**, precision **33.71%**, recall **0.010%**. These local values
+are not official FID/precision/recall and do not overwrite their null fields.
 
 ## Visual observations and limitations
 

@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -21,6 +22,7 @@ from torchvision.utils import save_image
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from experiment_utils import configure_determinism, record_run, write_json
 from model import Discriminator, Generator
 from utils import D_train, G_train, save_models
 
@@ -31,10 +33,6 @@ def sha256(path):
 
 def command(*args):
     return subprocess.check_output(args, cwd=ROOT, text=True).strip()
-
-
-def write_json(path, value):
-    path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
 
 
 def main():
@@ -50,85 +48,85 @@ def main():
     parser.add_argument("--threads", type=int, default=2)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda", "mps"), default="auto")
     args = parser.parse_args()
-    if min(args.epochs, args.batch_size, args.generation_batch_size, args.threads) < 1 or args.lr <= 0:
+    if min(args.epochs, args.batch_size, args.generation_batch_size, args.threads) < 1 or not math.isfinite(args.lr) or args.lr <= 0:
         parser.error("epochs, batch sizes, threads and learning rate must be positive")
+    if any(not 0 <= seed < 2**32 for seed in [args.seed, args.generation_seed]):
+        parser.error("training and generation seeds must be in [0, 2**32) for NumPy compatibility")
+    configure_determinism()
     exporter_device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     if args.device != "auto" and args.device != exporter_device:
         parser.error(f"The unmodified starter exporter selects {exporter_device}; use --device auto")
     run = args.run_dir.resolve()
     run.mkdir(parents=True, exist_ok=False)
-    checkpoints = run / "checkpoints"
-    checkpoints.mkdir()
-    start = time.perf_counter()
-    device_name = args.device
-    if device_name == "auto":
-        device_name = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-    device = torch.device(device_name)
-    torch.set_num_threads(args.threads)
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(args.seed)
-    torch.use_deterministic_algorithms(True)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
+    with record_run(run / "metadata.json") as run_state:
+        checkpoints = run / "checkpoints"
+        checkpoints.mkdir()
+        start = time.perf_counter()
+        device_name = args.device
+        if device_name == "auto":
+            device_name = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        device = torch.device(device_name)
+        torch.set_num_threads(args.threads)
+        random.seed(args.seed)
+        np.random.seed(args.seed)
+        torch.manual_seed(args.seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(args.seed)
 
-    source_paths = [".gitignore", "README.md", "requirements.txt", "model.py", "train.py",
-                    "generate.py", "utils.py", "scripts/baseline.py", "scripts/train.sh", "scripts/generate.sh"]
-    source_hashes = {}
-    for relative in source_paths:
-        source = ROOT / relative
-        target = run / "source" / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
-        source_hashes[relative] = sha256(source)
-    (run / "source" / "working-tree.patch").write_text(command("git", "diff", "HEAD"))
-    (run / "environment.txt").write_text(command(sys.executable, "-m", "pip", "--no-cache-dir", "freeze") + "\n")
-    (run / "torch-config.txt").write_text(torch.__config__.show())
-    cpu_model = platform.processor()
-    if Path("/proc/cpuinfo").exists():
-        cpu_model = next((line.split(":", 1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines()
-                          if line.startswith("model name")), cpu_model)
-    metadata = {
-        "run_id": run.name, "method": "B0-starter", "status": "running",
-        "started_at_utc": datetime.now(timezone.utc).isoformat(),
-        "commit": command("git", "rev-parse", "HEAD"),
-        "git_status": command("git", "status", "--short"),
-        "source_sha256": source_hashes,
-        "original_checkpoint_sha256": sha256(ROOT / "checkpoints/G.pth"),
-        "invocation": sys.argv,
-        "hardware": {"platform": platform.platform(), "cpu": cpu_model, "logical_cpus": os.cpu_count(),
-                     "device": str(device), "torch_threads": args.threads,
-                     "gpu": torch.cuda.get_device_name(device) if device.type == "cuda" else None},
-        "python": sys.version,
-        "config": {"epochs": args.epochs, "batch_size": args.batch_size, "lr_G": args.lr, "lr_D": args.lr,
-                   "optimizer": "Adam", "betas": [0.9, 0.999], "eps": 1e-8, "weight_decay": 0,
-                   "seed": args.seed, "generation_seed": args.generation_seed,
-                   "generation_batch_size": args.generation_batch_size, "num_workers": 0,
-                   "pin_memory": False, "drop_last": False, "data_path": str(args.data_path.resolve()),
-                   "prior": "N(0,I), latent dimension 100", "latent_scale": 1.0,
-                   "loss_D": "BCE(D(real),1) + BCE(D(G(z)),0)", "loss_G": "BCE(D(G(z)),1)",
-                   "preprocessing": "ToTensor; Normalize(mean=0.5, std=0.5); flatten to 784",
-                   "export": "unmodified generate.py: save_image without rescaling; negative values clipped",
-                   "generation_rng": "seed before runpy executes generate.py, including model initialization"},
-        "determinism": {"algorithms": True, "cudnn_benchmark": False, "cudnn_deterministic": True,
-                        "cross_hardware_bitwise_reproducibility": False},
-        "generator": {"layers": [100, 256, 512, 1024, 784], "hidden_activation": "LeakyReLU(0.2)",
-                      "output_activation": "tanh", "parameters": 1486352},
-        "discriminator": {"layers": [784, 1024, 512, 256, 1], "hidden_activation": "LeakyReLU(0.2)",
-                          "output_activation": "sigmoid", "equal_real_fake_priors": True,
-                          "calibration": "not evaluated"},
-        "protocol_differences_from_train_py": [
-            "Explicit seeds and deterministic settings; CPU thread count recorded.",
-            "DataLoader num_workers=0 and pin_memory=False for this local run.",
-            "Unused test loader omitted; all training examples retained.",
-            "Save final G and D at any epoch count in an isolated directory; record losses and metadata."],
-        "official_metrics": {"status": "not yet evaluated: official evaluator unavailable",
-                             "FID": None, "precision": None, "recall": None},
-    }
-    write_json(run / "metadata.json", metadata)
-    try:
+        source_paths = [".gitignore", "README.md", "requirements.txt", "model.py", "train.py",
+                        "generate.py", "sampling.py", "experiment_utils.py", "utils.py", "scripts/baseline.py", "scripts/train.sh", "scripts/generate.sh"]
+        source_hashes = {}
+        for relative in source_paths:
+            source = ROOT / relative
+            target = run / "source" / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+            source_hashes[relative] = sha256(source)
+        (run / "source" / "working-tree.patch").write_text(command("git", "diff", "HEAD"))
+        (run / "environment.txt").write_text(command(sys.executable, "-m", "pip", "--no-cache-dir", "freeze") + "\n")
+        (run / "torch-config.txt").write_text(torch.__config__.show())
+        cpu_model = platform.processor()
+        if Path("/proc/cpuinfo").exists():
+            cpu_model = next((line.split(":", 1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines()
+                              if line.startswith("model name")), cpu_model)
+        metadata = {
+            "run_id": run.name, "method": "B0-starter", "status": "running",
+            "started_at_utc": run_state["started_at_utc"],
+            "commit": command("git", "rev-parse", "HEAD"),
+            "git_status": command("git", "status", "--short"),
+            "source_sha256": source_hashes,
+            "original_checkpoint_sha256": sha256(ROOT / "checkpoints/G.pth"),
+            "invocation": sys.argv,
+            "hardware": {"platform": platform.platform(), "cpu": cpu_model, "logical_cpus": os.cpu_count(),
+                         "device": str(device), "torch_threads": args.threads,
+                         "gpu": torch.cuda.get_device_name(device) if device.type == "cuda" else None},
+            "python": sys.version,
+            "config": {"epochs": args.epochs, "batch_size": args.batch_size, "lr_G": args.lr, "lr_D": args.lr,
+                       "optimizer": "Adam", "betas": [0.9, 0.999], "eps": 1e-8, "weight_decay": 0,
+                       "seed": args.seed, "generation_seed": args.generation_seed,
+                       "generation_batch_size": args.generation_batch_size, "num_workers": 0,
+                       "pin_memory": False, "drop_last": False, "data_path": str(args.data_path.resolve()),
+                       "prior": "N(0,I), latent dimension 100", "latent_scale": 1.0,
+                       "loss_D": "BCE(D(real),1) + BCE(D(G(z)),0)", "loss_G": "BCE(D(G(z)),1)",
+                       "preprocessing": "ToTensor; Normalize(mean=0.5, std=0.5); flatten to 784",
+                       "export": "starter-compatible generate.py: save_image without rescaling; negative values clipped",
+                       "generation_rng": "seed before runpy executes generate.py, including model initialization"},
+            "determinism": {"algorithms": True, "cudnn_benchmark": False, "cudnn_deterministic": True,
+                            "cross_hardware_bitwise_reproducibility": False},
+            "generator": {"layers": [100, 256, 512, 1024, 784], "hidden_activation": "LeakyReLU(0.2)",
+                          "output_activation": "tanh", "parameters": 1486352},
+            "discriminator": {"layers": [784, 1024, 512, 256, 1], "hidden_activation": "LeakyReLU(0.2)",
+                              "output_activation": "sigmoid", "equal_real_fake_priors": True,
+                              "calibration": "not evaluated"},
+            "protocol_differences_from_train_py": [
+                "Explicit seeds and deterministic settings; CPU thread count recorded.",
+                "DataLoader num_workers=0 and pin_memory=False for this local run.",
+                "Unused test loader omitted; all training examples retained.",
+                "Save final G and D at any epoch count in an isolated directory; record losses and metadata."],
+            "official_metrics": {"status": "not yet evaluated: official evaluator unavailable",
+                                 "FID": None, "precision": None, "recall": None},
+        }
+        write_json(run / "metadata.json", metadata)
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
         dataset_start = time.perf_counter()
         dataset = datasets.MNIST(root=str(args.data_path.resolve()), train=True, transform=transform, download=True)
@@ -181,7 +179,7 @@ def main():
         metadata["checkpoint_sha256"] = checkpoint_hashes
         write_json(checkpoints / "metadata.json", metadata)
 
-        # Execute the exact starter exporter in the run directory, with a seeded RNG.
+        # Execute the starter-compatible exporter in the run directory, with a seeded RNG.
         generation_code = (
             "import random, runpy, sys, numpy as np, torch; "
             f"sys.path.insert(0, {str(ROOT)!r}); "
@@ -235,11 +233,6 @@ def main():
                                    "accepted_images": 10000, "acceptance_rate": 1.0,
                                    "official_metrics": metadata["official_metrics"]}, sort_keys=True) + "\n")
         print(f"Completed baseline: {run}", flush=True)
-    except Exception as error:
-        metadata["status"] = "failed"
-        metadata["error"] = f"{type(error).__name__}: {error}"
-        write_json(run / "metadata.json", metadata)
-        raise
 
 
 if __name__ == "__main__":
