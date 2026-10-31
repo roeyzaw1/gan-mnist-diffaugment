@@ -1,9 +1,11 @@
 # T1 — DiffAugment, instance noise and adaptive augmentation (training-side, D inputs)
 
-Workstream owner: Roey. Status: **training done for 5/6 conditions; local metrics pending.**
-Portable evidence: this report, [export-check CSV](diffaugment-export-check.csv),
-[workstream ledger](diffaugment-ledger.jsonl) (added when all runs finish) and
-[sample figure](figures/diffaugment-samples.png),
+Workstream owner: Roey. Status: **seed 0 complete for all 6 conditions; seed-1 repeats
+(baseline, translation, ADA) queued.**
+Portable evidence: this report, [results CSV](diffaugment-results.csv),
+[export-check CSV](diffaugment-export-check.csv), [workstream ledger](diffaugment-ledger.jsonl),
+figures: [metrics](figures/diffaugment-metrics.png), [digit classes](figures/diffaugment-classes.png),
+[samples](figures/diffaugment-samples.png),
 [what-D-sees figure](figures/diffaugment-what-d-sees.png). Full runs stay on Juliet under
 `~/a2-diffaug/repo/runs/` (ignored by Git, per the [artifact policy](README.md)).
 
@@ -39,7 +41,8 @@ Same as the shared baseline: 10 epochs, batch 64, Adam 2e-4, training seed 0,
 generation seed 1, batch 256, starter export (negative pixels clipped), frozen
 [local-MNIST64-k3-v1](local-metrics.md) evaluator. Runs on Juliet (A100), via
 `scripts/diffaug_study.sh` (one Slurm array task per condition, then evaluation).
-The baseline is re-run on the same GPU so all conditions share hardware.
+The baseline is re-run on the same GPU so all conditions share hardware (its run is
+recorded in the shared `ledger.jsonl` on Juliet; the five augmented runs in the workstream ledger).
 `scripts/baseline.py` gained `--augment`, `--instance-noise`, `--ada-target`; with
 none of them it behaves exactly as before.
 
@@ -50,11 +53,44 @@ none of them it behaves exactly as before.
 | da-translation | `--augment translation` | 179 | 1 |
 | da-translation-cutout | `--augment translation,cutout` | 180 | 1 |
 | da-translation-cutout-color | `--augment translation,cutout,color` | 183 | 1 |
-| ada-translation-cutout | `--augment translation,cutout --ada-target 0.6` | pending | 0.29 |
+| ada-translation-cutout | `--augment translation,cutout --ada-target 0.6` | 180 | 0.29 |
 
 ## Results
 
-**Local metrics: pending** (evaluation job runs after all training tasks succeed).
+Frozen local-MNIST64-k3-v1 metrics, training seed 0, generation seed 1, σ=1, starter
+export ([CSV](diffaugment-results.csv), [figure](figures/diffaugment-metrics.png)):
+
+| Condition | FD-MNIST ↓ | Precision ↑ | Recall ↑ | Largest digit class |
+|---|---:|---:|---:|---:|
+| baseline | 502.51 | **57.25%** | 0.00% | "5": 38% |
+| instance noise 0.1 | 632.42 | 51.72% | 0.00% | "5": 31% |
+| DA: translation | 232.82 | 55.65% | 0.17% | "1": 32% |
+| **DA: translation + cutout** | **95.98** | 43.29% | 4.14% | "1": 16% |
+| DA: translation + cutout + colour | 123.24 | 46.51% | 3.98% | "1": 21% |
+| ADA: translation + cutout | 375.98 | 44.47% | **5.77%** | "1": 41% |
+
+Real-vs-real control: FD 0.47, precision 89.5%, recall 90.7%.
+
+**Interpretation (one training seed — see limitations).**
+
+- **DiffAugment works on the fixed MLP**: translation alone more than halves FD (503 → 233)
+  at similar precision; adding cutout cuts FD by a further factor of 2.4 (→ 96) and is the
+  only setting whose digit classes are close to uniform
+  ([class figure](figures/diffaugment-classes.png)): every digit between 2.9% and 15.6%,
+  against 38% "5" for the baseline. Mode coverage, not sharper digits, drives the FD gain.
+- **Recall appears only with cutout** (≈4%), i.e. once D can no longer rely on any fixed
+  stroke. The price is ≈12 points of precision: G now spreads over more of the digit
+  manifold, including less clean samples.
+- **Stronger is not always better**: brightness/contrast on top of cutout raises FD
+  (96 → 123); a plausible reason is that MNIST has no real brightness variation to be robust to.
+- **Instance noise alone hurts** (FD 632): at std 0.1, annealed to 0, it did not remove D's
+  shortcut on this architecture (stronger or slower-annealed noise was not tested).
+- **ADA** reaches the highest recall (5.8%) but collapses toward "1" (41% of samples)
+  and has worse FD than fixed cutout; its p peaked at 0.53 and ended at 0.29, so it
+  augments far less than fixed cutout (p=1). Kept as a coverage option only if seed 1 confirms the recall.
+- **Single-seed caveat**: the same baseline settings gave FD 774 on CPU (shared
+  reference) and 503 on GPU here — training variance between runs is large. Seed-1 repeats
+  are queued; claims above should be read as preliminary until then.
 
 Visual check, first 64 exported images per condition, no selection
 ([figure](figures/diffaugment-samples.png)): the baseline gives speckled, noisy
@@ -89,5 +125,5 @@ two exports: `clip` = starter `save_image(x)` (negatives → 0); `rescale` =
 
 ## Limitations
 
-One training seed per condition; local development metrics, not official
+One training seed per condition so far (repeats queued); local development metrics, not official
 FID/precision/recall; 10-epoch budget only.
