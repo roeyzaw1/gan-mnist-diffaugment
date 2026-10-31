@@ -25,6 +25,7 @@ sys.path.insert(0, str(ROOT))
 from experiment_utils import configure_determinism, record_run, write_json
 from model import Discriminator, Generator
 from utils import D_train, G_train, save_models
+from diffaugment import D_train_aug, G_train_aug, TRANSFORMS
 
 
 def sha256(path):
@@ -47,11 +48,28 @@ def main():
     parser.add_argument("--generation-batch-size", type=int, default=256)
     parser.add_argument("--threads", type=int, default=2)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda", "mps"), default="auto")
+    parser.add_argument("--augment", default="", help="DiffAugment policy, comma-separated: translation,cutout,color")
+    parser.add_argument("--instance-noise", type=float, default=0.0,
+                        help="Initial std of Gaussian instance noise on D inputs, annealed linearly to 0")
+    parser.add_argument("--method", default=None, help="Method label for metadata/ledger")
+    parser.add_argument("--ada-target", type=float, default=0.0,
+                        help="Adaptive augmentation: target for mean sign(D(real)-0.5); 0 = off (p fixed at 1)")
+    parser.add_argument("--ada-images", type=int, default=60000,
+                        help="Images over which p can move from 0 to 1 (ADA speed)")
     args = parser.parse_args()
     if min(args.epochs, args.batch_size, args.generation_batch_size, args.threads) < 1 or not math.isfinite(args.lr) or args.lr <= 0:
         parser.error("epochs, batch sizes, threads and learning rate must be positive")
     if any(not 0 <= seed < 2**32 for seed in [args.seed, args.generation_seed]):
         parser.error("training and generation seeds must be in [0, 2**32) for NumPy compatibility")
+    policy = tuple(p for p in args.augment.split(",") if p)
+    if any(p not in TRANSFORMS for p in policy) or args.instance_noise < 0:
+        parser.error(f"unknown augmentation in {policy} or negative noise")
+    augmented = bool(policy) or args.instance_noise > 0
+    if args.ada_target and not policy:
+        parser.error("--ada-target needs an --augment policy")
+    method = args.method or ("B0-starter" if not augmented else
+                             ("ADA" if args.ada_target else "DiffAugment") +
+                             "(" + ",".join(policy) + f")+noise{args.instance_noise}")
     configure_determinism()
     exporter_device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     if args.device != "auto" and args.device != exporter_device:
@@ -74,7 +92,7 @@ def main():
             torch.cuda.manual_seed_all(args.seed)
 
         source_paths = [".gitignore", "README.md", "requirements.txt", "model.py", "train.py",
-                        "generate.py", "sampling.py", "experiment_utils.py", "utils.py", "scripts/baseline.py", "scripts/train.sh", "scripts/generate.sh"]
+                        "generate.py", "sampling.py", "experiment_utils.py", "utils.py", "diffaugment.py", "scripts/baseline.py", "scripts/train.sh", "scripts/generate.sh"]
         source_hashes = {}
         for relative in source_paths:
             source = ROOT / relative
@@ -90,7 +108,7 @@ def main():
             cpu_model = next((line.split(":", 1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines()
                               if line.startswith("model name")), cpu_model)
         metadata = {
-            "run_id": run.name, "method": "B0-starter", "status": "running",
+            "run_id": run.name, "method": method, "status": "running",
             "started_at_utc": run_state["started_at_utc"],
             "commit": command("git", "rev-parse", "HEAD"),
             "git_status": command("git", "status", "--short"),
@@ -110,7 +128,11 @@ def main():
                        "loss_D": "BCE(D(real),1) + BCE(D(G(z)),0)", "loss_G": "BCE(D(G(z)),1)",
                        "preprocessing": "ToTensor; Normalize(mean=0.5, std=0.5); flatten to 784",
                        "export": "starter-compatible generate.py: save_image without rescaling; negative values clipped",
-                       "generation_rng": "seed before runpy executes generate.py, including model initialization"},
+                       "generation_rng": "seed before runpy executes generate.py, including model initialization",
+                       "diffaugment_policy": list(policy), "instance_noise_initial_std": args.instance_noise,
+                       "instance_noise_schedule": "linear to 0 over all steps" if args.instance_noise else None,
+                       "ada_target": args.ada_target or None, "ada_images_0_to_1": args.ada_images if args.ada_target else None,
+                       "ada_update_interval_steps": 4 if args.ada_target else None},
             "determinism": {"algorithms": True, "cudnn_benchmark": False, "cudnn_deterministic": True,
                             "cross_hardware_bitwise_reproducibility": False},
             "generator": {"layers": [100, 256, 512, 1024, 784], "hidden_activation": "LeakyReLU(0.2)",
@@ -143,6 +165,9 @@ def main():
         g_optimizer = torch.optim.Adam(G.parameters(), lr=args.lr)
         d_optimizer = torch.optim.Adam(D.parameters(), lr=args.lr)
         steps = 0
+        total_steps = args.epochs * len(loader)
+        ada_p = 0.0 if args.ada_target else 1.0
+        ada_signs = []
         def synchronize():
             if device.type == "cuda":
                 torch.cuda.synchronize()
@@ -156,8 +181,19 @@ def main():
                 d_total = g_total = examples = 0
                 for x, _ in loader:
                     x = x.view(-1, 784).to(device)
-                    d_loss = D_train(x, G, D, d_optimizer, criterion, device)
-                    g_loss = G_train(x, G, D, g_optimizer, criterion, device)
+                    if augmented:
+                        noise = args.instance_noise * max(0.0, 1 - steps / total_steps)
+                        d_loss, r = D_train_aug(x, G, D, d_optimizer, criterion, device, policy, noise, ada_p)
+                        g_loss = G_train_aug(x, G, D, g_optimizer, criterion, device, policy, noise, ada_p)
+                        if args.ada_target:
+                            ada_signs.append(r)
+                            if len(ada_signs) == 4:   # adjust p every 4 steps, as in ADA
+                                step = np.sign(np.mean(ada_signs) - args.ada_target) * 4 * len(x) / args.ada_images
+                                ada_p = float(np.clip(ada_p + step, 0.0, 1.0))
+                                ada_signs = []
+                    else:
+                        d_loss = D_train(x, G, D, d_optimizer, criterion, device)
+                        g_loss = G_train(x, G, D, g_optimizer, criterion, device)
                     if not np.isfinite([d_loss, g_loss]).all():
                         raise RuntimeError("Non-finite training loss")
                     d_total += d_loss * len(x)
@@ -167,7 +203,8 @@ def main():
                 synchronize()
                 record = {"epoch": epoch, "steps_total": steps, "examples": examples,
                           "loss_D": d_total / examples, "loss_G": g_total / examples,
-                          "seconds": time.perf_counter() - epoch_start}
+                          "seconds": time.perf_counter() - epoch_start,
+                          "augment_p": ada_p if augmented else None}
                 log.write(json.dumps(record) + "\n")
                 log.flush()
                 print(json.dumps(record), flush=True)
@@ -221,7 +258,7 @@ def main():
         metadata["total_seconds"] = time.perf_counter() - start
         write_json(run / "metadata.json", metadata)
         write_json(checkpoints / "metadata.json", metadata)
-        ledger = ROOT / "experiments/ledger.jsonl"
+        ledger = ROOT / ("experiments/diffaugment-ledger.jsonl" if augmented else "experiments/ledger.jsonl")
         ledger.parent.mkdir(exist_ok=True)
         with ledger.open("a") as file:
             file.write(json.dumps({"run_id": run.name, "method": metadata["method"], "seed": args.seed,
