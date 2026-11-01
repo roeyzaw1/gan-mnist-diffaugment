@@ -255,3 +255,18 @@ Full study, ablations (translation only, colour, instance noise, adaptive ADA), 
 and limitations: [experiments/diffaugment.md](experiments/diffaugment.md).
 `checkpoints/G.pth` is still the original starter checkpoint, so the default
 `python generate.py` behaviour and the tests are unchanged.
+
+### Latent scaling on the shared DiffAugment weights
+
+To compare sigma values without retraining, use the checkpoint above with the
+paired runner. It defaults to sigma 1/1.5/2, generation seeds 1/2 and 10,000
+images per condition; it validates checkpoint provenance before running:
+
+```bash
+python scripts/compare_diffaugment_scaling.py \
+  --run-dir runs/roey-diffaugment-latent-seed0-e10
+```
+
+See [the checkpoint-specific study](experiments/diffaugment-latent.md).
+Full outputs remain in ignored `runs/`. This uses the frozen local evaluator;
+FD-MNIST and its precision/recall are not official platform metrics.
