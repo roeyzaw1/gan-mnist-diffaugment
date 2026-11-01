@@ -218,3 +218,40 @@ Tests compare all 10,000 PNGs against the archived starter, check sampling and
 RNG invariants, verify metric formulas against analytical/brute-force examples,
 and validate experiment inputs and output protection. CPU was tested locally;
 CUDA/MPS execution still needs hardware verification.
+
+## DiffAugment (training method that works)
+
+**Idea in one paragraph.** The discriminator is a plain MLP on raw pixels, so it can win
+the game by memorising exact pixel positions. When it wins too early (its loss drops to 0),
+it gives the generator no useful feedback and training collapses: the generator outputs
+the same blob for every input. DiffAugment (Zhao et al., NeurIPS 2020) applies the same
+random change to **every image the discriminator sees, real and fake**, in both the D and
+the G update: a random **shift of up to 4 pixels** and a random **14×14 black square**
+(`diffaugment.py`). D can no longer memorise pixels, so it has to judge the digit's shape,
+the game stays balanced and G learns to draw all ten digits. The generator and
+discriminator architectures are unchanged; only what D sees changes.
+
+**Train with it** (same settings as the starter, one extra flag):
+
+```bash
+python train.py --epochs 10 --diffaugment
+```
+
+**Generate from the shared DiffAugment model** (10 epochs, training seed 0):
+
+```bash
+python generate.py --batch_size 256 --checkpoint checkpoints/diffaugment-seed0-e10/G.pth
+```
+
+**Result** (4 training runs per method, 10 epochs, local-MNIST64-k3 evaluator;
+FD-MNIST uses a small MNIST CNN, not Inception FID):
+
+| Method | FD-MNIST ↓ (mean, range) | Precision | Recall | Collapsed runs |
+|---|---|---:|---:|---:|
+| Baseline | 899 (494–1704) | 37% | 0.01% | 1/4 |
+| **DiffAugment** | **100 (92–108)** | 49% | 3.1% | **0/4** |
+
+Full study, ablations (translation only, colour, instance noise, adaptive ADA), figures
+and limitations: [experiments/diffaugment.md](experiments/diffaugment.md).
+`checkpoints/G.pth` is still the original starter checkpoint, so the default
+`python generate.py` behaviour and the tests are unchanged.

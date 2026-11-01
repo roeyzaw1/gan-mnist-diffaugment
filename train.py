@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 from model import Generator, Discriminator
 from utils import D_train, G_train, save_models
+from diffaugment import D_train_aug, G_train_aug
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train GAN on MNIST.')
@@ -14,6 +15,9 @@ if __name__ == '__main__':
     parser.add_argument("--lr", type=float, default=0.0002, help="Learning rate.")
     parser.add_argument("--batch_size", type=int, default=64, help="Size of mini-batches for SGD.")
     parser.add_argument("--gpus", type=int, default=-1, help="Number of GPUs to use (-1 for all available).")
+    parser.add_argument("--diffaugment", action="store_true",
+                        help="DiffAugment: randomly shift every image by up to 4 px and black out a 14x14 square "
+                             "before the discriminator sees it (real and fake alike). See README.")
     args = parser.parse_args()
 
     to_download=False
@@ -91,8 +95,14 @@ if __name__ == '__main__':
     for epoch in range(1, n_epoch + 1):
         for batch_idx, (x, _) in enumerate(train_loader):
             x = x.view(-1, mnist_dim).to(device)
-            D_train(x, G, D, D_optimizer, criterion, device)
-            G_train(x, G, D, G_optimizer, criterion, device)
+            if args.diffaugment:
+                # Same random shift + blacked-out square for real and fake images, in both steps,
+                # so D cannot memorise exact pixels and the game stays balanced (diffaugment.py).
+                D_train_aug(x, G, D, D_optimizer, criterion, device, policy=("translation", "cutout"))
+                G_train_aug(x, G, D, G_optimizer, criterion, device, policy=("translation", "cutout"))
+            else:
+                D_train(x, G, D, D_optimizer, criterion, device)
+                G_train(x, G, D, G_optimizer, criterion, device)
 
         if epoch % 10 == 0:
             save_models(G, D, 'checkpoints')
