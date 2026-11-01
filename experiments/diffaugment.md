@@ -1,10 +1,11 @@
 # T1 — DiffAugment, instance noise and adaptive augmentation (training-side, D inputs)
 
-Workstream owner: Roey. Status: **seed 0 complete for all 6 conditions; seed-1 repeats
-(baseline, translation, ADA) queued.**
+Workstream owner: Roey. Status: **complete** — 6 conditions on training seed 0, and
+4 training seeds (0–3) for the three main methods.
 Portable evidence: this report, [results CSV](diffaugment-results.csv),
 [export-check CSV](diffaugment-export-check.csv), [workstream ledger](diffaugment-ledger.jsonl),
-figures: [metrics](figures/diffaugment-metrics.png), [digit classes](figures/diffaugment-classes.png),
+figures: [main result](figures/diffaugment-main.png), [collapse](figures/diffaugment-collapse-seed1.png),
+[all conditions](figures/diffaugment-metrics.png), [digit classes](figures/diffaugment-classes.png),
 [samples](figures/diffaugment-samples.png),
 [what-D-sees figure](figures/diffaugment-what-d-sees.png). Full runs stay on Juliet under
 `~/a2-diffaug/repo/runs/` (ignored by Git, per the [artifact policy](README.md)).
@@ -55,7 +56,36 @@ none of them it behaves exactly as before.
 | da-translation-cutout-color | `--augment translation,cutout,color` | 183 | 1 |
 | ada-translation-cutout | `--augment translation,cutout --ada-target 0.6` | 180 | 0.29 |
 
-## Results
+## Main result: quality, diversity and reliability over 4 training seeds
+
+Same protocol, training seeds 0–3 (generation seed 1). Each cell: FD-MNIST / precision % /
+recall %. A run is counted as **collapsed** when the generator outputs one fixed pattern
+(precision 0; D loss → 0 within 2–3 epochs). [Figure](figures/diffaugment-main.png).
+
+| Method | Seed 0 | Seed 1 | Seed 2 | Seed 3 | Mean | Collapsed |
+|---|---|---|---|---|---|---:|
+| Baseline | 503 / 57.2 / 0.00 | 1704 / 0.0 / 0.00 | 494 / 65.2 / 0.04 | 894 / 26.4 / 0.02 | **899** / 37.2 / 0.01 | 1/4 |
+| **DiffAugment** (translation + cutout) | 96 / 43.3 / 4.14 | 102 / 55.0 / 2.50 | 108 / 47.7 / 2.33 | 92 / 51.2 / 3.26 | **100** / 49.3 / 3.06 | 0/4 |
+| **ADA** (translation + cutout, adaptive p) | 376 / 44.5 / 5.77 | 413 / 48.6 / 10.35 | 299 / 49.2 / 6.85 | 441 / 52.9 / 6.55 | **382** / 48.8 / 7.38 | 0/4 |
+
+- **Normal training is a gamble.** The baseline's FD ranges from 494 to 1704 across seeds;
+  in seed 1 D's loss reached 0 in epoch 2, D rejected every fake, and G produced one
+  identical noise pattern for every input ([figure](figures/diffaugment-collapse-seed1.png)).
+- **DiffAugment (translation + cutout) is both the best and the most stable**: FD 92–108
+  on every seed (mean ≈100, ≈9× lower than the baseline mean), 0/4 collapses. Its D loss
+  rises steadily to ≈1.3 in every run — D finds the game harder over time instead of
+  winning it.
+- **ADA is also stable (0/4) and gives the most diversity** (recall 5.8–10.4%, mean 7.4%)
+  but worse FD (mean 382). In seed 1, when D started to win, ADA raised p to 0.8 by
+  epoch 3 and training recovered. Its samples are dominated by "1"s on every seed (31–51% of
+  samples), whereas DiffAugment keeps every digit between 2.9% and 21% on every seed:
+  diversity in the recall sense (coverage of real samples) is not the same as balanced
+  digit classes.
+- **Quality–diversity trade-off**: precision is similar for DiffAugment and ADA (≈49%),
+  above the baseline mean (37%, pulled down by the collapsed and weak runs) but below its
+  best runs (57–65%). Augmentation buys reliability and coverage, not sharper digits.
+
+## Ablation: which augmentation? (training seed 0)
 
 Frozen local-MNIST64-k3-v1 metrics, training seed 0, generation seed 1, σ=1, starter
 export ([CSV](diffaugment-results.csv), [figure](figures/diffaugment-metrics.png)):
@@ -71,7 +101,7 @@ export ([CSV](diffaugment-results.csv), [figure](figures/diffaugment-metrics.png
 
 Real-vs-real control: FD 0.47, precision 89.5%, recall 90.7%.
 
-**Interpretation (one training seed — see limitations).**
+**Interpretation of the ablation (one training seed per condition).**
 
 - **DiffAugment works on the fixed MLP**: translation alone more than halves FD (503 → 233)
   at similar precision; adding cutout cuts FD by a further factor of 2.4 (→ 96) and is the
@@ -87,10 +117,12 @@ Real-vs-real control: FD 0.47, precision 89.5%, recall 90.7%.
   shortcut on this architecture (stronger or slower-annealed noise was not tested).
 - **ADA** reaches the highest recall (5.8%) but collapses toward "1" (41% of samples)
   and has worse FD than fixed cutout; its p peaked at 0.53 and ended at 0.29, so it
-  augments far less than fixed cutout (p=1). Kept as a coverage option only if seed 1 confirms the recall.
-- **Single-seed caveat**: the same baseline settings gave FD 774 on CPU (shared
-  reference) and 503 on GPU here — training variance between runs is large. Seed-1 repeats
-  are queued; claims above should be read as preliminary until then.
+  augments far less than fixed cutout (p=1). Its recall advantage repeated on seeds 1–3 (see main result).
+- **Translation alone is not enough**: on seed 1 it collapsed exactly like the baseline
+  (FD 1691, precision 0) — the shift is easy for D to see through; cutout is what keeps
+  D from winning.
+- Instance noise, colour and translation-only were run on seed 0 only (plus seed 1 for
+  translation): treat their ranking as indicative.
 
 Visual check, first 64 exported images per condition, no selection
 ([figure](figures/diffaugment-samples.png)): the baseline gives speckled, noisy
@@ -125,5 +157,8 @@ two exports: `clip` = starter `save_image(x)` (negatives → 0); `rescale` =
 
 ## Limitations
 
-One training seed per condition so far (repeats queued); local development metrics, not official
-FID/precision/recall; 10-epoch budget only.
+Four training seeds for the main methods, one or two for the ablation conditions; local
+development metrics, not official FID/precision/recall; 10-epoch budget only; augmentation
+strengths (4-px shift, 14×14 cutout, ADA target 0.6) were not tuned. The same baseline gave
+FD 774 on the shared CPU reference and 494–894 on our GPU runs when it did not collapse:
+compare methods within this study, not across machines.
