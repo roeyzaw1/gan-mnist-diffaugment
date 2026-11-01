@@ -1,4 +1,4 @@
-# Latent scaling on Roey's shared DiffAugment checkpoint
+# Latent scaling on the shared DiffAugment checkpoint
 
 This study uses the original Juliet/A100 translation+cutout checkpoint shared
 in `main` at `166bda6`, not the locally retrained CPU replicas.
@@ -19,7 +19,7 @@ in `main` at `166bda6`, not the locally retrained CPU replicas.
 
 ```bash
 python scripts/compare_diffaugment_scaling.py \
-  --run-dir runs/roey-diffaugment-latent-seed0-e10 \
+  --run-dir runs/shared-diffaugment-latent-seed0-e10 \
   --sigmas 1 1.5 2 --seeds 1 2 --threads 2
 ```
 

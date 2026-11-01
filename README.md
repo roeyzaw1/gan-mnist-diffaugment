@@ -154,8 +154,9 @@ ignored by Git. The shared 10-epoch reference G and D are versioned under
 `checkpoints/baseline-seed0-e10/`; its metadata, logs, grid and original source
 snapshot are under `experiments/baseline-seed0-e10/`. Compact evidence from the
 pilot is also versioned, while intermediate checkpoints and all 10,000-image
-batches remain local. `checkpoints/G.pth` remains the original starter checkpoint;
-the root `generate.py` invocation still loads that file. The baseline runner
+batches remain local. `checkpoints/G.pth` now contains the selected DiffAugment
+generator for automated evaluation; the root `generate.py` invocation loads
+that file. The baseline runner
 loads its own trained checkpoint from the isolated run directory.
 The existing checkpoint is preserved during baseline runs. The cluster scripts
 still expect an environment named `venv/`; the commands above use `.venv/` for
@@ -253,8 +254,33 @@ FD-MNIST uses a small MNIST CNN, not Inception FID):
 
 Full study, ablations (translation only, colour, instance noise, adaptive ADA), figures
 and limitations: [experiments/diffaugment.md](experiments/diffaugment.md).
-`checkpoints/G.pth` is still the original starter checkpoint, so the default
-`python generate.py` behaviour and the tests are unchanged.
+`checkpoints/G.pth` contains this shared DiffAugment generator for automated
+evaluation. The original checkpoint remains recoverable from Git history.
+
+### Automated evaluation configuration
+
+The default invocation is:
+
+```bash
+python generate.py --batch_size 256
+```
+
+It loads `checkpoints/G.pth`: the translation+cutout generator trained for
+10 epochs with training seed 0, using sigma 1 and the original unseeded
+generation behavior. No training or augmentation runs during inference.
+The generator architecture is unchanged. Generation writes exactly 10,000
+RGB PNG images of size 28x28, numbered 0–9999, into `samples/`, with the
+starter's clipping of negative values and no rescaling.
+
+The selected file is identical to
+`checkpoints/diffaugment-seed0-e10/G.pth`; SHA-256:
+`cfefa20e6f28c863f23e19a0521a64fbaf92364341de6b724feeb5ca6bc0522d`.
+Selection settings are recorded in `checkpoints/submission.json`; the original
+training metadata remains in `checkpoints/diffaugment-seed0-e10/metadata.json`.
+Sigma 1 is the local FD-MNIST/precision candidate among the tested scales;
+official FID/precision/recall remain pending and may rank configurations differently.
+Generated samples and local backups stay ignored by Git. Publish this checkpoint
+and the required code/dependencies for the automated runner to use this selection.
 
 ### Latent scaling on the shared DiffAugment weights
 
@@ -264,7 +290,7 @@ images per condition; it validates checkpoint provenance before running:
 
 ```bash
 python scripts/compare_diffaugment_scaling.py \
-  --run-dir runs/roey-diffaugment-latent-seed0-e10
+  --run-dir runs/shared-diffaugment-latent-seed0-e10
 ```
 
 See [the checkpoint-specific study](experiments/diffaugment-latent.md).

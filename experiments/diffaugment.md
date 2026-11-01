@@ -1,6 +1,6 @@
 # T1 — DiffAugment, instance noise and adaptive augmentation (training-side, D inputs)
 
-Workstream owner: Roey. Status: **complete** — 6 conditions on training seed 0, and
+Workstream: differentiable augmentation. Status: **complete** — 6 conditions on training seed 0, and
 4 training seeds (0–3) for the three main methods.
 Portable evidence: this report, [results CSV](diffaugment-results.csv),
 [export-check CSV](diffaugment-export-check.csv), [workstream ledger](diffaugment-ledger.jsonl),

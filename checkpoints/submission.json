@@ -1,0 +1,28 @@
+{
+  "method": "DiffAugment translation + cutout",
+  "checkpoint": "checkpoints/G.pth",
+  "checkpoint_sha256": "cfefa20e6f28c863f23e19a0521a64fbaf92364341de6b724feeb5ca6bc0522d",
+  "training_metadata": "checkpoints/diffaugment-seed0-e10/metadata.json",
+  "source_checkpoint": "checkpoints/diffaugment-seed0-e10/G.pth",
+  "training_seed": 0,
+  "training_epochs": 10,
+  "latent_scale": 1.0,
+  "generation_seed": null,
+  "required_invocation": "python generate.py --batch_size 256",
+  "output": {
+    "directory": "samples",
+    "count": 10000,
+    "format": "PNG",
+    "mode": "RGB",
+    "size": [
+      28,
+      28
+    ],
+    "export": "starter clipping without rescaling"
+  },
+  "official_metrics": {
+    "FID": null,
+    "precision": null,
+    "recall": null
+  }
+}

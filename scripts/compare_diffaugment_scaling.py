@@ -1,4 +1,4 @@
-"""Paired latent-scale comparison on Roey's shared, frozen DiffAugment G.
+"""Paired latent-scale comparison on the shared, frozen DiffAugment G.
 
 No retraining or DRS. Needs the trained checkpoint from the DiffAugment study;
 the default expected hash identifies its recorded seed-0/10-epoch checkpoint.
@@ -89,7 +89,7 @@ def main():
                        "num_samples": 10000, "torch_threads": args.threads,
                        "training": "none; fixed trained DiffAugment G", "DRS": False,
                        "export": "starter RGB PNG, negative pixels clipped, no rescaling",
-                       "checkpoint_provenance": "Roey's Juliet/A100 translation+cutout seed0 e10; shared in main at 166bda6"
+                       "checkpoint_provenance": "Shared Juliet/A100 translation+cutout seed0 e10; shared in main at 166bda6"
                                                 if args.expected_sha256 == EXPECTED_CHECKPOINT else "explicit alternative checkpoint; record training provenance separately",
                        "replication_limit": "generation seeds on one trained checkpoint; not independent training runs"},
             "official_metrics": {"FID": None, "precision": None, "recall": None},
