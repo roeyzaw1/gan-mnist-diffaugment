@@ -1,3 +1,61 @@
+# Stabilising a GAN on MNIST with DiffAugment
+
+*Master IASD (Université Paris Dauphine-PSL), Data Science Lab, assignment A2.
+Group project: Roey Zaworbach and [arielgg46](https://github.com/arielgg46).*
+
+## The problem
+
+A GAN is two neural networks playing a game. The **generator** turns random noise into
+images of handwritten digits, and the **discriminator** (the "judge") tries to tell
+those fakes apart from real MNIST digits. Each learns from the other. In this assignment the
+generator's architecture is fixed, a small fully-connected network, so the goal is to
+get better and more varied digits by changing **how it is trained**, not its shape.
+
+## The main finding: DiffAugment
+
+With the starter code the judge wins too easily: it memorises exact pixel positions
+of real digits and stops giving the generator useful feedback. In 1 of 4 runs the generator
+**collapsed** and drew the same blob for every input.
+
+**DiffAugment** (Zhao et al., NeurIPS 2020) randomly shifts every image the judge
+sees, real or fake, by up to 4 pixels, and blacks out a random 14×14 square. The judge
+can no longer memorise pixels and has to look at the shape of the digit, so the game
+stays balanced. (See [diffaugment.py](diffaugment.py).)
+
+![What the judge sees](experiments/figures/diffaugment-what-d-sees.png)
+
+## Results
+
+Each method was trained 4 times (different random seeds, 10 epochs) and scored on 10,000
+generated images:
+- **FD**: how far the generated set is from real MNIST overall, measured with a small
+  digit-recognition network (lower is better);
+- **precision**: share of generated images that look like real digits;
+- **recall**: share of the variety of real handwriting that the generator covers.
+
+| Method | FD ↓ (mean, range) | Precision | Recall | Collapsed runs |
+|---|---|---:|---:|---:|
+| Starter training | 899 (494–1704) | 37% | 0.01% | 1 / 4 |
+| **DiffAugment** | **100 (92–108)** | **49%** | 3.1% | **0 / 4** |
+| Adaptive augmentation (ADA) | 382 | 49% | 7.4% | 0 / 4 |
+
+![Main result](experiments/figures/diffaugment-main.png)
+
+DiffAugment cut FD by about 9×, never collapsed, and produced all ten digits in roughly
+equal numbers. ADA, which turns augmentation up or down depending on how confident the
+judge is, gave the most variety but drew too many "1"s. The ablations (shift only,
+colour changes, instance noise) and the limitations are in
+[experiments/diffaugment.md](experiments/diffaugment.md).
+
+```bash
+python train.py --epochs 10 --diffaugment      # train with DiffAugment
+python generate.py --batch_size 256            # write 10,000 digits to samples/
+```
+
+---
+
+*The original course README follows.*
+
 # DataLabAssignement2
 
 ## Using GPUs with MesoNet
